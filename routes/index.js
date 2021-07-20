@@ -1,6 +1,12 @@
 var express = require('express');
+var fs = require('fs');
+var path = require('path');
 var router = express.Router();
 const{ body, validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+const { json } = require('express');
+
+const pathUsuarios = path.join(__dirname, '../data/users.json');
 
 const arrayValidation = [body('nombre')
 .notEmpty().withMessage('Escribe un nombre').bail(),
@@ -22,6 +28,8 @@ router.get('/', function(req, res, next) {
 router.post('/', arrayValidation, function(req, res){
   const info = req.body;
   const errors = validationResult(req);
+
+
   if(errors.isEmpty()){
  
       let colorFondo = info.color;
@@ -34,7 +42,27 @@ router.post('/', arrayValidation, function(req, res){
         res.clearCookie('recordarColor')
       }     
         req.session.color = colorFondo;
-        res.render("mensaje", {info, colorFondo});
+        //res.render("mensaje", {info, colorFondo});
+
+        let password = req.body.password;
+        password = bcrypt.hashSync(password, 10);
+
+        let usuario = {
+          nombre : req.body.nombre,
+          password : password,
+          email : req.body.email,
+          edad : req.body.edad
+        }
+
+        
+        const usuarios = JSON.parse(fs.readFileSync(pathUsuarios,'utf-8'));
+        usuarios.push(usuario);
+        
+        //Cookie
+        res.cookie('usuarioLog', usuario.email, {maxAge:50000});
+
+        fs.writeFileSync(pathUsuarios, JSON.stringify(usuarios));
+        res.render('mensaje', {info : usuario, colorFondo});
   }
   else{
     
