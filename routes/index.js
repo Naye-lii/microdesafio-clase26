@@ -23,14 +23,24 @@ router.post('/', arrayValidation, function(req, res){
   const info = req.body;
   const errors = validationResult(req);
   if(errors.isEmpty()){
-      req.session.color = info.color;
-      const colorFondo = req.session.color;
-      res.render("mensaje", {info, colorFondo});
-      
+ 
+      let colorFondo = info.color;
+     
+      if(req.body.recordarColor !== undefined ){
+        res.cookie('recordarColor', colorFondo, {maxAge:50000})
+      }
+      if(req.body.olvidarColor !== undefined ){
+        colorFondo= 'white';
+        res.clearCookie('recordarColor')
+      }     
+        req.session.color = colorFondo;
+        res.render("mensaje", {info, colorFondo});
   }
   else{
+    
     res.render('formulario', { errors: errors.mapped() });
   }
 });
+
 
 module.exports = router;
