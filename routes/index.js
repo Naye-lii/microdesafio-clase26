@@ -51,7 +51,8 @@ router.post('/', arrayValidation, function(req, res){
           nombre : req.body.nombre,
           password : password,
           email : req.body.email,
-          edad : req.body.edad
+          edad : req.body.edad,
+          colorFondo : colorFondo
         }
 
         
